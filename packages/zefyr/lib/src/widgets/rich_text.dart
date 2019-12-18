@@ -11,8 +11,9 @@ import 'package:notus/notus.dart';
 import 'caret.dart';
 import 'editable_box.dart';
 
-class EditableRichText extends LeafRenderObjectWidget {
-  EditableRichText({
+/// Represents single paragraph of Zefyr rich-text.
+class ZefyrRichText extends LeafRenderObjectWidget {
+  ZefyrRichText({
     @required this.node,
     @required this.text,
   }) : assert(node != null && text != null);
@@ -22,7 +23,7 @@ class EditableRichText extends LeafRenderObjectWidget {
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return new RenderEditableParagraph(
+    return RenderZefyrParagraph(
       text,
       node: node,
       textDirection: Directionality.of(context),
@@ -31,27 +32,27 @@ class EditableRichText extends LeafRenderObjectWidget {
 
   @override
   void updateRenderObject(
-      BuildContext context, RenderEditableParagraph renderObject) {
+      BuildContext context, RenderZefyrParagraph renderObject) {
     renderObject
       ..text = text
       ..node = node;
   }
 }
 
-class RenderEditableParagraph extends RenderParagraph
+class RenderZefyrParagraph extends RenderParagraph
     implements RenderEditableBox {
-  RenderEditableParagraph(
+  RenderZefyrParagraph(
     TextSpan text, {
-    @required ContainerNode node,
-    TextAlign textAlign: TextAlign.start,
+    @required LineNode node,
+    TextAlign textAlign = TextAlign.start,
     @required TextDirection textDirection,
-    bool softWrap: true,
-    TextOverflow overflow: TextOverflow.clip,
-    double textScaleFactor: 1.0,
+    bool softWrap = true,
+    TextOverflow overflow = TextOverflow.clip,
+    double textScaleFactor = 1.0,
     int maxLines,
   })  : _node = node,
-        _prototypePainter = new TextPainter(
-          text: new TextSpan(text: '.', style: text.style),
+        _prototypePainter = TextPainter(
+          text: TextSpan(text: '.', style: text.style),
           textAlign: textAlign,
           textDirection: textDirection,
           textScaleFactor: textScaleFactor,
@@ -68,7 +69,7 @@ class RenderEditableParagraph extends RenderParagraph
 
   LineNode get node => _node;
   LineNode _node;
-  void set node(LineNode value) {
+  set node(LineNode value) {
     _node = value;
   }
 
@@ -93,7 +94,7 @@ class RenderEditableParagraph extends RenderParagraph
   @override
   TextPosition getPositionForOffset(Offset offset) {
     final position = super.getPositionForOffset(offset);
-    return new TextPosition(
+    return TextPosition(
       offset: _node.documentOffset + position.offset,
       affinity: position.affinity,
     );
@@ -101,12 +102,12 @@ class RenderEditableParagraph extends RenderParagraph
 
   @override
   TextRange getWordBoundary(TextPosition position) {
-    final localPosition = new TextPosition(
+    final localPosition = TextPosition(
       offset: position.offset - _node.documentOffset,
       affinity: position.affinity,
     );
     final localRange = super.getWordBoundary(localPosition);
-    return new TextRange(
+    return TextRange(
       start: _node.documentOffset + localRange.start,
       end: _node.documentOffset + localRange.end,
     );
@@ -114,7 +115,7 @@ class RenderEditableParagraph extends RenderParagraph
 
   @override
   Offset getOffsetForCaret(TextPosition position, Rect caretPrototype) {
-    final localPosition = new TextPosition(
+    final localPosition = TextPosition(
       offset: position.offset - _node.documentOffset,
       affinity: position.affinity,
     );
@@ -127,10 +128,10 @@ class RenderEditableParagraph extends RenderParagraph
   List<ui.TextBox> getEndpointsForSelection(TextSelection selection) {
     TextSelection local = getLocalSelection(selection);
     if (local.isCollapsed) {
-      final caret = CaretPainter.buildPrototype(preferredLineHeight);
+      final caret = CursorPainter.buildPrototype(preferredLineHeight);
       final offset = getOffsetForCaret(local.extent, caret);
       return [
-        new ui.TextBox.fromLTRBD(
+        ui.TextBox.fromLTRBD(
           offset.dx,
           offset.dy,
           offset.dx,
@@ -163,13 +164,13 @@ class RenderEditableParagraph extends RenderParagraph
       final box = result.first;
       final dx = isBaseShifted == -1 ? box.right : box.left;
       result.removeAt(0);
-      result.insert(0,
-          new ui.TextBox.fromLTRBD(dx, box.top, dx, box.bottom, box.direction));
+      result.insert(
+          0, ui.TextBox.fromLTRBD(dx, box.top, dx, box.bottom, box.direction));
     }
     if (isExtentShifted) {
       final box = result.last;
       result.removeLast;
-      result.add(new ui.TextBox.fromLTRBD(
+      result.add(ui.TextBox.fromLTRBD(
           box.left, box.top, box.left, box.bottom, box.direction));
     }
     return result;
@@ -180,8 +181,8 @@ class RenderEditableParagraph extends RenderParagraph
   //
 
   @override
-  void set text(TextSpan value) {
-    _prototypePainter.text = new TextSpan(text: '.', style: value.style);
+  set text(InlineSpan value) {
+    _prototypePainter.text = TextSpan(text: '.', style: value.style);
     _selectionRects = null;
     super.text = value;
   }
@@ -217,7 +218,7 @@ class RenderEditableParagraph extends RenderParagraph
       _selectionRects = null;
     }
     _selectionRects ??= getBoxesForSelection(getLocalSelection(selection));
-    final Paint paint = new Paint()..color = selectionColor;
+    final Paint paint = Paint()..color = selectionColor;
     for (ui.TextBox box in _selectionRects) {
       context.canvas.drawRect(box.toRect().shift(offset), paint);
     }

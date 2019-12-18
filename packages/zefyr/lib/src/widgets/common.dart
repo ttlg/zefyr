@@ -6,10 +6,10 @@ import 'package:flutter/widgets.dart';
 import 'package:notus/notus.dart';
 
 import 'editable_box.dart';
-import 'editable_text.dart';
 import 'horizontal_rule.dart';
 import 'image.dart';
 import 'rich_text.dart';
+import 'scope.dart';
 import 'theme.dart';
 
 /// Raw widget representing a single line of rich text document in Zefyr editor.
@@ -35,50 +35,54 @@ class RawZefyrLine extends StatefulWidget {
   final EdgeInsets padding;
 
   @override
-  _RawZefyrLineState createState() => new _RawZefyrLineState();
+  _RawZefyrLineState createState() => _RawZefyrLineState();
 }
 
 class _RawZefyrLineState extends State<RawZefyrLine> {
-  final LayerLink _link = new LayerLink();
+  final LayerLink _link = LayerLink();
 
   @override
   Widget build(BuildContext context) {
-    ensureVisible(context);
+    final scope = ZefyrScope.of(context);
+    if (scope.isEditable) {
+      ensureVisible(context, scope);
+    }
     final theme = ZefyrTheme.of(context);
-    final editable = ZefyrEditableText.of(context);
 
     Widget content;
     if (widget.node.hasEmbed) {
-      content = buildEmbed(context);
+      content = buildEmbed(context, scope);
     } else {
       assert(widget.style != null);
-
-      final text = new EditableRichText(
+      content = ZefyrRichText(
         node: widget.node,
         text: buildText(context),
       );
-      content = new EditableBox(
-        child: text,
+    }
+
+    if (scope.isEditable) {
+      content = EditableBox(
+        child: content,
         node: widget.node,
         layerLink: _link,
-        renderContext: editable.renderContext,
-        showCursor: editable.showCursor,
-        selection: editable.selection,
+        renderContext: scope.renderContext,
+        showCursor: scope.showCursor,
+        selection: scope.selection,
         selectionColor: theme.selectionColor,
+        cursorColor: theme.cursorColor,
       );
+      content = CompositedTransformTarget(link: _link, child: content);
     }
 
-    final result = new CompositedTransformTarget(link: _link, child: content);
     if (widget.padding != null) {
-      return new Padding(padding: widget.padding, child: result);
+      return Padding(padding: widget.padding, child: content);
     }
-    return result;
+    return content;
   }
 
-  void ensureVisible(BuildContext context) {
-    final editable = ZefyrEditableText.of(context);
-    if (editable.selection.isCollapsed &&
-        widget.node.containsOffset(editable.selection.extentOffset)) {
+  void ensureVisible(BuildContext context, ZefyrScope scope) {
+    if (scope.selection.isCollapsed &&
+        widget.node.containsOffset(scope.selection.extentOffset)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         bringIntoView(context);
       });
@@ -109,21 +113,21 @@ class _RawZefyrLineState extends State<RawZefyrLine> {
     final List<TextSpan> children = widget.node.children
         .map((node) => _segmentToTextSpan(node, theme))
         .toList(growable: false);
-    return new TextSpan(style: widget.style, children: children);
+    return TextSpan(style: widget.style, children: children);
   }
 
   TextSpan _segmentToTextSpan(Node node, ZefyrThemeData theme) {
     final TextNode segment = node;
     final attrs = segment.style;
 
-    return new TextSpan(
+    return TextSpan(
       text: segment.value,
       style: _getTextStyle(attrs, theme),
     );
   }
 
   TextStyle _getTextStyle(NotusStyle style, ZefyrThemeData theme) {
-    TextStyle result = new TextStyle();
+    TextStyle result = TextStyle();
     if (style.containsSame(NotusAttribute.bold)) {
       result = result.merge(theme.boldStyle);
     }
@@ -136,36 +140,16 @@ class _RawZefyrLineState extends State<RawZefyrLine> {
     return result;
   }
 
-  Widget buildEmbed(BuildContext context) {
-    final theme = ZefyrTheme.of(context);
-    final editable = ZefyrEditableText.of(context);
-
+  Widget buildEmbed(BuildContext context, ZefyrScope scope) {
     EmbedNode node = widget.node.children.single;
     EmbedAttribute embed = node.style.get(NotusAttribute.embed);
 
     if (embed.type == EmbedType.horizontalRule) {
-      final hr = new ZefyrHorizontalRule(node: node);
-      return new EditableBox(
-        child: hr,
-        node: widget.node,
-        layerLink: _link,
-        renderContext: editable.renderContext,
-        showCursor: editable.showCursor,
-        selection: editable.selection,
-        selectionColor: theme.selectionColor,
-      );
+      return ZefyrHorizontalRule(node: node);
     } else if (embed.type == EmbedType.image) {
-      return new EditableBox(
-        child: ZefyrImage(node: node, delegate: editable.imageDelegate),
-        node: widget.node,
-        layerLink: _link,
-        renderContext: editable.renderContext,
-        showCursor: editable.showCursor,
-        selection: editable.selection,
-        selectionColor: theme.selectionColor,
-      );
+      return ZefyrImage(node: node, delegate: scope.imageDelegate);
     } else {
-      throw new UnimplementedError('Unimplemented embed type ${embed.type}');
+      throw UnimplementedError('Unimplemented embed type ${embed.type}');
     }
   }
 }

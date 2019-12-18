@@ -2,7 +2,6 @@ language: dart
 
 dart:
   - stable
-  - dev
 
 os:
   - linux
@@ -15,19 +14,14 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - libstdc++6
-      - fonts-droid
+      - fonts-droid-fallback
 
 cache:
   directories:
     - $HOME/.pub-cache
 
 env:
-  - FLUTTER_VERSION=beta
-  - FLUTTER_VERSION=dev
-
-matrix:
-  allow_failures:
-    - env: FLUTTER_VERSION=dev
+  - FLUTTER_VERSION=stable
 
 before_script:
   - pwd
@@ -38,4 +32,4 @@ script:
 - pwd
 - ./tool/travis.sh notus
 - ./tool/travis.sh zefyr
-#- bash <(curl -s https://codecov.io/bash)
+- bash <(curl -s https://codecov.io/bash)

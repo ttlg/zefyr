@@ -12,26 +12,25 @@ import '../testing.dart';
 void main() {
   group('$ZefyrEditor', () {
     testWidgets('allows merging theme data', (tester) async {
-      var delta = new Delta()
+      var delta = Delta()
         ..insert(
           'Website',
           NotusAttribute.link.fromString('https://github.com').toJson(),
         )
         ..insert('\n');
-      var doc = new NotusDocument.fromDelta(delta);
+      var doc = NotusDocument.fromDelta(delta);
       var theme = ZefyrThemeData(linkStyle: TextStyle(color: Colors.red));
-      var editor =
-          new EditorSandBox(tester: tester, document: doc, theme: theme);
-      await editor.tapEditor();
+      var editor = EditorSandBox(tester: tester, document: doc, theme: theme);
+      await editor.pumpAndTap();
       // TODO: figure out why this extra pump is needed here
       await tester.pumpAndSettle();
-      EditableRichText p = tester.widget(find.byType(EditableRichText).first);
+      ZefyrRichText p = tester.widget(find.byType(ZefyrRichText).first);
       expect(p.text.children.first.style.color, Colors.red);
     });
 
     testWidgets('collapses selection when unfocused', (tester) async {
-      final editor = new EditorSandBox(tester: tester);
-      await editor.tapEditor();
+      final editor = EditorSandBox(tester: tester);
+      await editor.pumpAndTap();
       await editor.updateSelection(base: 0, extent: 3);
       expect(editor.findSelectionHandle(), findsNWidgets(2));
       await editor.tapHideKeyboardButton();
@@ -40,12 +39,12 @@ void main() {
     });
 
     testWidgets('toggle enabled state', (tester) async {
-      final editor = new EditorSandBox(tester: tester);
-      await editor.tapEditor();
+      final editor = EditorSandBox(tester: tester);
+      await editor.pumpAndTap();
       await editor.updateSelection(base: 0, extent: 3);
       await editor.disable();
       ZefyrEditor widget = tester.widget(find.byType(ZefyrEditor));
-      expect(widget.enabled, isFalse);
+      expect(widget.mode, ZefyrMode.view);
     });
   });
 }

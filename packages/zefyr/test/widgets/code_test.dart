@@ -10,8 +10,8 @@ import '../testing.dart';
 void main() {
   group('$ZefyrCode', () {
     testWidgets('format as code', (tester) async {
-      final editor = new EditorSandBox(tester: tester);
-      await editor.tapEditor();
+      final editor = EditorSandBox(tester: tester);
+      await editor.pumpAndTap();
       await editor.tapButtonWithIcon(Icons.code);
 
       BlockNode block = editor.document.root.children.first;

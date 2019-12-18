@@ -35,8 +35,8 @@ import 'editable_box.dart';
 /// When a box is detached from rendering pipeline it unregisters
 /// itself by calling [removeBox].
 class ZefyrRenderContext extends ChangeNotifier {
-  final Set<RenderEditableProxyBox> _dirtyBoxes = new Set();
-  final Set<RenderEditableProxyBox> _activeBoxes = new Set();
+  final Set<RenderEditableProxyBox> _dirtyBoxes = Set();
+  final Set<RenderEditableProxyBox> _activeBoxes = Set();
 
   Set<RenderEditableProxyBox> get dirty => _dirtyBoxes;
   Set<RenderEditableProxyBox> get active => _activeBoxes;
@@ -97,11 +97,13 @@ class ZefyrRenderContext extends ChangeNotifier {
   /// Returns closest render box to the specified global [point].
   ///
   /// If [point] is inside of one of active render boxes that box is returned.
-  /// Otherwise this method checks if [point] is to the left or to the right
+  /// If no box found this method checks if [point] is to the left or to the right
   /// side of a box, e.g. if vertical offset of this point is inside of one of
-  /// the active boxes. If it is then that box is returned.
+  /// the active boxes. If it is then that box is returned. If not then this
+  /// method picks a box with shortest vertical distance to this [point].
   RenderEditableProxyBox closestBoxForGlobalPoint(Offset point) {
     assert(!_disposed);
+    if (_activeBoxes.isEmpty) return null;
     RenderEditableProxyBox box = boxForGlobalPoint(point);
     if (box != null) return box;
 
@@ -114,7 +116,7 @@ class ZefyrRenderContext extends ChangeNotifier {
     box = _activeBoxes.map((p) {
       final localPoint = p.globalToLocal(point);
       final distance = localPoint.dy - p.size.height;
-      return new MapEntry(distance.abs(), p);
+      return MapEntry(distance.abs(), p);
     }).reduce((a, b) {
       return (a.key <= b.key) ? a : b;
     }).value;

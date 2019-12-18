@@ -34,19 +34,22 @@ class LineNode extends ContainerNode<LeafNode>
     if (isLast) {
       if (parent is BlockNode) {
         if (parent.isLast) return null;
-        return (parent.next is BlockNode)
+        LineNode line = (parent.next is BlockNode)
             ? (parent.next as BlockNode).first
             : parent.next;
-      } else
+        return line;
+      } else {
         return null;
+      }
     } else {
-      return (next is BlockNode) ? (next as BlockNode).first : next;
+      LineNode line = (next is BlockNode) ? (next as BlockNode).first : next;
+      return line;
     }
   }
 
   /// Creates new empty [LineNode] with the same style.
   LineNode clone() {
-    final node = new LineNode();
+    final node = LineNode();
     node.applyStyle(style);
     return node;
   }
@@ -105,8 +108,8 @@ class LineNode extends ContainerNode<LeafNode>
   NotusStyle collectStyle(int offset, int length) {
     int local = math.min(this.length - offset, length);
 
-    NotusStyle result = new NotusStyle();
-    Set<NotusAttribute> excluded = new Set();
+    NotusStyle result = NotusStyle();
+    Set<NotusAttribute> excluded = Set();
 
     void _handle(NotusStyle style) {
       if (result.isEmpty) {
@@ -129,7 +132,7 @@ class LineNode extends ContainerNode<LeafNode>
       result = result.mergeAll(node.style);
       int pos = node.length - data.offset;
       while (!node.isLast && pos < local) {
-        node = node.next;
+        node = node.next as LeafNode;
         _handle(node.style);
         pos += node.length;
       }
@@ -151,7 +154,7 @@ class LineNode extends ContainerNode<LeafNode>
   }
 
   @override
-  LeafNode get defaultChild => new TextNode();
+  LeafNode get defaultChild => TextNode();
 
   // TODO: should be able to cache length and invalidate on any child-related operation
   @override
@@ -161,7 +164,7 @@ class LineNode extends ContainerNode<LeafNode>
   Delta toDelta() {
     final Delta delta = children
         .map((text) => text.toDelta())
-        .fold(new Delta(), (a, b) => a.concat(b));
+        .fold(Delta(), (a, b) => a.concat(b));
     var attributes = style;
     if (parent is BlockNode) {
       BlockNode block = parent;
@@ -291,8 +294,9 @@ class LineNode extends ContainerNode<LeafNode>
     if (newStyle == null || newStyle.isEmpty) return;
 
     applyStyle(newStyle);
-    if (!newStyle.contains(NotusAttribute.block))
-      return; // no block-level changes
+    if (!newStyle.contains(NotusAttribute.block)) {
+      return;
+    } // no block-level changes
 
     final blockStyle = newStyle.get(NotusAttribute.block);
     if (parent is BlockNode) {
@@ -301,14 +305,14 @@ class LineNode extends ContainerNode<LeafNode>
         unwrap();
       } else if (blockStyle != parentStyle) {
         unwrap();
-        BlockNode block = new BlockNode();
+        BlockNode block = BlockNode();
         block.applyAttribute(blockStyle);
         wrap(block);
         block.optimize();
       } // else the same style, no-op.
     } else if (blockStyle != NotusAttribute.block.unset) {
       // Only wrap with a new block if this is not an unset
-      BlockNode block = new BlockNode();
+      BlockNode block = BlockNode();
       block.applyAttribute(blockStyle);
       wrap(block);
       block.optimize();
@@ -321,7 +325,7 @@ class LineNode extends ContainerNode<LeafNode>
     if (text.isEmpty) return;
 
     if (isEmpty) {
-      final child = new LeafNode(text);
+      final child = LeafNode(text);
       add(child);
       child.formatAndOptimize(style);
     } else {

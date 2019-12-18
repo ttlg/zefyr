@@ -13,7 +13,7 @@ class InputConnectionController implements TextInputClient {
       : assert(onValueChanged != null);
 
   //
-  // New public members
+  // public members
   //
 
   final RemoteValueChanged onValueChanged;
@@ -37,7 +37,7 @@ class InputConnectionController implements TextInputClient {
       _lastKnownRemoteTextEditingValue = value;
       _textInputConnection = TextInput.attach(
         this,
-        new TextInputConfiguration(
+        TextInputConfiguration(
           inputType: TextInputType.multiline,
           obscureText: false,
           autocorrect: true,
@@ -146,11 +146,11 @@ class InputConnectionController implements TextInputClient {
       final diff = fastDiff(oldText, text, cursorPosition);
       onValueChanged(diff.start, diff.deleted, diff.inserted, value.selection);
     } catch (e, trace) {
-      FlutterError.reportError(new FlutterErrorDetails(
+      FlutterError.reportError(FlutterErrorDetails(
         exception: e,
         stack: trace,
         library: 'Zefyr',
-        context: 'while updating editing value',
+        context: ErrorSummary('while updating editing value'),
       ));
       rethrow;
     }
@@ -163,4 +163,9 @@ class InputConnectionController implements TextInputClient {
   final List<TextEditingValue> _sentRemoteValues = [];
   TextInputConnection _textInputConnection;
   TextEditingValue _lastKnownRemoteTextEditingValue;
+
+  @override
+  void updateFloatingCursor(RawFloatingCursorPoint point) {
+    // TODO: implement updateFloatingCursor
+  }
 }

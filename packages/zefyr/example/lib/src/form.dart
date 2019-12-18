@@ -1,7 +1,12 @@
+// Copyright (c) 2018, the Zefyr project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
 import 'package:flutter/material.dart';
 import 'package:zefyr/zefyr.dart';
 
 import 'full_page.dart';
+import 'images.dart';
 
 class FormEmbeddedScreen extends StatefulWidget {
   @override
@@ -10,7 +15,7 @@ class FormEmbeddedScreen extends StatefulWidget {
 
 class _FormEmbeddedScreenState extends State<FormEmbeddedScreen> {
   final ZefyrController _controller = ZefyrController(NotusDocument());
-  final FocusNode _focusNode = new FocusNode();
+  final FocusNode _focusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +45,7 @@ class _FormEmbeddedScreenState extends State<FormEmbeddedScreen> {
   }
 
   Widget buildEditor() {
-    final theme = new ZefyrThemeData(
+    final theme = ZefyrThemeData(
       toolbarTheme: ZefyrToolbarTheme.fallback(context).copyWith(
         color: Colors.grey.shade800,
         toggleColor: Colors.grey.shade900,
@@ -56,8 +61,8 @@ class _FormEmbeddedScreenState extends State<FormEmbeddedScreen> {
         decoration: InputDecoration(labelText: 'Description'),
         controller: _controller,
         focusNode: _focusNode,
-        autofocus: false,
-        imageDelegate: new CustomImageDelegate(),
+        autofocus: true,
+        imageDelegate: CustomImageDelegate(),
         physics: ClampingScrollPhysics(),
       ),
     );

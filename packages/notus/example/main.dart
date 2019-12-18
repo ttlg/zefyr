@@ -2,10 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:notus/convert.dart';
 import 'package:notus/notus.dart';
 
 void main() {
-  final doc = new NotusDocument();
+  final doc = NotusDocument();
   // Modify this document with insert, delete and format operations
   doc.insert(
       0, 'Notus package provides rich text document model for Zefyr editor');
@@ -17,9 +18,12 @@ void main() {
   doc.collectStyle(1, 0); // returned style would include "bold" and "h1".
 
   // Listen to all changes applied to this document.
-  doc.changes.listen((change){
+  doc.changes.listen((change) {
     print(change);
   });
+
+  final a = NotusHTMLCodec().encode(doc.toDelta());
+  print(a);
 
   // Dispose resources allocated by this document, e.g. closes "changes" stream.
   // After document is closed it cannot be modified.

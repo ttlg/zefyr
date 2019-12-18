@@ -10,8 +10,8 @@ import '../testing.dart';
 void main() {
   group('$ZefyrHorizontalRule', () {
     testWidgets('format as horizontal rule', (tester) async {
-      final editor = new EditorSandBox(tester: tester);
-      await editor.tapEditor();
+      final editor = EditorSandBox(tester: tester);
+      await editor.pumpAndTap();
       await editor.tapButtonWithIcon(Icons.remove);
 
       LineNode line = editor.document.root.children.last;
@@ -20,8 +20,8 @@ void main() {
 
     testWidgets('tap left side of horizontal rule puts caret before it',
         (tester) async {
-      final editor = new EditorSandBox(tester: tester);
-      await editor.tapEditor();
+      final editor = EditorSandBox(tester: tester);
+      await editor.pumpAndTap();
       await editor.tapButtonWithIcon(Icons.remove);
       await editor.updateSelection(base: 0, extent: 0);
 
@@ -34,13 +34,13 @@ void main() {
 
     testWidgets('tap right side of horizontal rule puts caret after it',
         (tester) async {
-      final editor = new EditorSandBox(tester: tester);
-      await editor.tapEditor();
+      final editor = EditorSandBox(tester: tester);
+      await editor.pumpAndTap();
       await editor.tapButtonWithIcon(Icons.remove);
       await editor.updateSelection(base: 0, extent: 0);
 
       final hr = find.byType(ZefyrHorizontalRule);
-      final offset = tester.getBottomRight(hr) - new Offset(1.0, 1.0);
+      final offset = tester.getBottomRight(hr) - Offset(1.0, 1.0);
       await tester.tapAt(offset);
       LineNode line = editor.document.root.children.last;
       EmbedNode embed = line.children.single;
@@ -48,10 +48,9 @@ void main() {
       expect(editor.selection.extentOffset, embed.documentOffset + 1);
     });
 
-    testWidgets('selects on long press',
-        (tester) async {
-      final editor = new EditorSandBox(tester: tester);
-      await editor.tapEditor();
+    testWidgets('selects on long press', (tester) async {
+      final editor = EditorSandBox(tester: tester);
+      await editor.pumpAndTap();
       await editor.tapButtonWithIcon(Icons.remove);
       await editor.updateSelection(base: 0, extent: 0);
 
